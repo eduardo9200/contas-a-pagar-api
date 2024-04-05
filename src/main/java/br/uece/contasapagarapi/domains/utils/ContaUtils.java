@@ -14,14 +14,16 @@ public class ContaUtils {
 	public static StatusConta getStatusAtualizado(boolean contaPaga, LocalDate vencimento) {
 		LocalDate hoje = LocalDate.now();
 		StatusConta status;
+		final int LIMITE_DIAS = 7;
 		
 		if (contaPaga) {
 			status = StatusConta.PAGO;
 		} else if (hoje.isAfter(vencimento)) {
 			status = StatusConta.VENCIDA;
-		} else if (hoje.isEqual(vencimento)) {
-			status = StatusConta.ABERTA_PERTO_VENCER;
-		} else if (hoje.isBefore(vencimento) && hoje.isAfter(vencimento.minusDays(7))) {
+		} else if (
+			hoje.isEqual(vencimento) ||
+			(hoje.isBefore(vencimento) && hoje.isAfter(vencimento.minusDays(LIMITE_DIAS)))
+		) {
 			status = StatusConta.ABERTA_PERTO_VENCER;
 		} else {
 			status = StatusConta.ABERTA;
@@ -59,9 +61,13 @@ public class ContaUtils {
 				break;
 			case AM:
 				tempoAtraso = Period.between(vencimento, hoje).getMonths();
+				if (tempoAtraso == 0)
+					tempoAtraso++;
 				break;
 			case AA:
 				tempoAtraso = Period.between(vencimento, hoje).getYears();
+				if (tempoAtraso == 0)
+					tempoAtraso++;
 				break;
 			}
 			
